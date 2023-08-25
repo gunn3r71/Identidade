@@ -1,0 +1,77 @@
+version: '3.9'
+
+services:
+  api:
+    build: 
+      dockerfile: Identidade/Dockerfile
+      context: .
+    container_name: identidade-api
+    ports:
+      - 5001:443
+      - 5000:80
+    # depends_on:
+    #   - identidade-mariadb
+    #   - identidade-mongodb
+    env_file:
+      - .env
+    networks:
+      - identidade
+    
+  # identidade-redis:
+  #   image: redis
+  #   container_name: identidade-redis
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - identidade
+  #   volumes:
+  #     - identidade-redis:/data
+
+  identidade-mariadb:
+    image: mariadb
+    container_name: identidade-mariadb
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - identidade
+    volumes:
+      - identidade-mariadb:/var/lib/mysql
+
+  identidade-mongodb:
+    image: mongo
+    container_name: identidade-mongodb
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - identidade
+    volumes:
+      - identidade-mongodb:/data/db
+
+  identidade-mongo-express:
+    image: mongo-express
+    container_name: identidade-mongodb-express
+    restart: always
+    ports:
+      - "8081:8081"
+    depends_on:
+      - identidade-mongodb
+    env_file:
+      - .env
+    networks:
+      - identidade
+    volumes:
+      - identidade-mongodb:/data/db
+
+networks:
+  identidade:
+    driver: bridge
+
+volumes:
+  # identidade-redis:
+  identidade-mariadb:
+  identidade-mongodb:
